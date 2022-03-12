@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import RK45
 from typing import Callable
+from datetime import datetime
 
 class Simulation:
 
@@ -13,12 +14,6 @@ class Simulation:
 
     # The rate (hz) of the controller
     controlRate: float
-
-    # The last time the control was updated
-    lastControlTime: float
-
-    # The last control
-    lastControl: np.ndarray
 
     # Time step
     timeStep: float
@@ -49,9 +44,6 @@ class Simulation:
         self.controlRate = controlRate
         self.timeStep = 1 / self.controlRate
 
-        self.lastControlTime = -100
-        self.lastControl = np.array([0,0])
-
         self.states = np.zeros((1,4))
         self.times = np.zeros((1,1))
 
@@ -63,21 +55,30 @@ class Simulation:
 
         :param duration float: Duration to run it for.
         """
-        rk45 = RK45(self.dynamics, 0.0, self.initialState, duration, max_step=self.timeStep)
-        times = []
-        states = []
-        times.append(rk45.t)
-        states.append(rk45.y)
-        while(rk45.status == 'running'):
-            rk45.step()
-            times.append(rk45.t)
-            states.append(rk45.y)
+        times = [0.0]
+        states = [self.initialState]
+
+        time = 0.0
+        startTime = datetime.now()
+        iterCount = 0
+        while(time < duration):
+            print(f"{iterCount}: Sim time: {time}/{duration}     Wall Time: {datetime.now()-startTime}")
+
+            self.control = self.controller(times[-1], states[-1])
+            
+            rk45 = RK45(self.dynamics, time, states[-1], self.timeStep)
+            while(rk45.status == 'running'):
+                rk45.step()
+                times.append(rk45.t)
+                states.append(rk45.y)
+            time += self.timeStep
+            iterCount += 1
+            
 
         self.times = np.array(times)
         self.states = np.array(states)
 
     def dynamics(self, time, state) -> np.ndarray:
-        control = self.getControl(time, state)
         x = state[0]
         y = state[1]
         v = state[2]
@@ -85,15 +86,9 @@ class Simulation:
         derivative = np.array([0.0,0.0,0.0,0.0])
         derivative[0] = v * np.cos(psi)
         derivative[1] = v * np.sin(psi)
-        derivative[2] = control[0]
-        derivative[3] = control[1]
+        derivative[2] = self.control[0]
+        derivative[3] = self.control[1]
         return derivative
-
-    def getControl(self, time, state) -> np.ndarray:
-        if(self.lastControlTime + self.timeStep <= time):
-            self.lastControl = self.controller(time, state)
-            self.lastControlTime = time
-        return self.lastControl
 
 def plotSimulation(
         sim: Simulation,

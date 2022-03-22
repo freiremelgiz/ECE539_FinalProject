@@ -72,11 +72,11 @@ can observe the following indexing mappings:
 where $\vect{z}_{[i,\ j]} \triangleq (z_i, z_{i+1}, \ldots, z_{j-1})^T$.
 
 \subsection*{General Nonlinear Constraints}
-We require $N$ general nonlinear constraints (i.e., $m=N$). Begin by
-letting $\vect{g}^L = \vect{g}^U = \vect{0}_{N\times 1}$. Then, the
+We require $4N$ general nonlinear constraints (i.e., $m=4N$). Begin by
+letting $\vect{g}^L = \vect{g}^U = \vect{0}_{m\times 1}$. Then, the
 function $g:\mathbb{R}^{n}\rightarrow \mathbb{R}^m$ has the form:
 \begin{equation}
-  g(\vect{z}) = \mat{f_d(\vect{x}_0,\vect{u}_0) - \vect{x}_1 \\ 
+  g(\vect{z}) = \mat{f_d(\vect{x}_0,\vect{u}_0) - \vect{x}_1 \\
   \vdots \\ f_d(\vect{x}_{N-1},\vect{u}_{N-1}) - \vect{x}_N}
 \end{equation}
 

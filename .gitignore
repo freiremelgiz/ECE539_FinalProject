@@ -8,7 +8,7 @@ __pycache__/
 *.log
 *.out
 *.run.xml
-*.syntex.gz
+*.gz
 *.bbl
 *.aux
 *.bcf

@@ -4,6 +4,18 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Tex extensions
+*.log
+*.out
+*.run.xml
+*.syntex.gz
+*.bbl
+*.aux
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+
 # C extensions
 *.so
 

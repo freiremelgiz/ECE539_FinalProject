@@ -1,0 +1,102 @@
+\documentclass[12pt, letterpaper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[reqno]{amsmath}
+\usepackage{centernot}
+\usepackage{hyperref}
+\usepackage{amssymb,  bm, amsthm, graphicx}
+\graphicspath{{figures/}}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[margin=1.4cm]{geometry}
+\usepackage[
+    backend=biber,
+    natbib=true,
+    style=numeric,
+    sorting=none
+]{biblatex}
+\addbibresource{mybib.bib}
+\setcounter{MaxMatrixCols}{20}
+
+\usepackage{url}
+
+\title{ECE539 Final Report}
+\author{Victor Freire \& Ian Ruh}
+\date{2022}
+
+\def\bf{\mathbf}
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\mat}[1]{\begin{bmatrix} #1 \end{bmatrix}}
+
+\begin{document}
+\maketitle
+
+\section*{MPC Problem in IPOPT Format}
+Let the MPC problem be:
+\begin{align} \label{NMPC} \tag{NMPC}
+  \text{minimize} \quad  &\frac{1}{2}
+  \tilde{\vect{x}}_N^TQ_f\tilde{\vect{x}}_N + \frac{1}{2}\sum_{k=0}^{N -
+  1} \big(\tilde{\vect{x}}_k^T Q \tilde{\vect{x}}_k + \vect{u}_k^T R
+  \vect{u}_k\big)\\
+  \text{subject to} \quad & \vect{x}_{k+1} = f_d(\vect{x}_k,
+  \vect{u}_k), \quad k = 0, \ldots, N-1, \nonumber\\
+  &\tilde{\vect{x}}_k = \vect{x}_k - \vect{x}_f, \quad k = 0, \dots,
+  N\nonumber,\\
+  &\text{and given} \quad \vect{x}_0, \nonumber
+\end{align}
+with decision variables $\vect{x}_{i}\in \mathbb{R}^{n_x}, i =
+0,\ldots,N$ and $\vect{u}_{j}\in\mathbb{R}^{n_u}, j = 0,\ldots,N-1$.
+
+The IPOPT problem format is:
+\begin{align} \label{IPOPT} \tag{IPOPT}
+  \text{minimize} \quad &f(\vect{z})\\
+  \text{subject to} \quad &\vect{g}^L \leq g(\vect{z}) \leq
+  \vect{g}^U, \nonumber\\
+  &\vect{z}^L \leq \vect{z} \leq \vect{z}^U, \nonumber
+\end{align}
+with decision variable $\vect{z}\in\mathbb{R}^n$.
+
+\subsection*{Embedding}
+The vector $\vect{z} \in \mathbb{R}^{6N+4}$ (i.e., $n=6N+4$) is formatted as follows:
+\begin{equation}
+  \vect{z} = \mat{\vect{x}_0^T & \cdots & \vect{x}_{N}^T & \vect{u}_0^T
+  & \cdots & \vect{u}_{N-1}^T}^T. 
+\end{equation}
+We will also use zero indexing for elements of $\vect{z}$ such that, for
+example: $z_0 = x_0$, $z_3 = \psi_0$, $z_5 = y_1$, etc. In general, we
+can observe the following indexing mappings:
+\begin{subequations}
+\begin{align}
+  \vect{x}_i &= \vect{z}_{[4i,\ 4i + 4]},\\
+  \vect{u}_i &= \vect{z}_{[4N + 2i + 4,\ 4N + 2i + 6]},
+\end{align}
+\end{subequations}
+where $\vect{z}_{[i,\ j]} \triangleq (z_i, z_{i+1}, \ldots, z_{j-1})^T$.
+
+\subsection*{General Nonlinear Constraints}
+We require $N$ general nonlinear constraints (i.e., $m=N$). Begin by
+letting $\vect{g}^L = \vect{g}^U = \vect{0}_{N\times 1}$. Then, the
+function $g:\mathbb{R}^{n}\rightarrow \mathbb{R}^m$ has the form:
+\begin{equation}
+  g(\vect{z}) = \mat{f_d(\vect{x}_0,\vect{u}_0) - \vect{x}_1 \\ 
+  \vdots \\ f_d(\vect{x}_{N-1},\vect{u}_{N-1}) - \vect{x}_N}
+\end{equation}
+
+\subsection*{Lower and Upper Bounds}
+The only required constraint of this type is to enforce $\vect{x}_0 =
+\vect{x}_{init}$ where $\vect{x}_{init}$ is a given parameter.
+Therefore, we can choose:
+\begin{subequations}
+  \begin{align}
+    \vect{z}^L &= \mat{\vect{x}_{init}^T & -\infty\vect{1}_{6N\times
+    1}}^T,\\
+    \vect{z}^U &= \mat{\vect{x}_{init}^T & \infty\vect{1}_{6N\times
+    1}}^T.
+  \end{align}
+\end{subequations}
+
+\subsection*{Objective Function}
+The objective function is already a function of $\vect{z}$ by using the
+index mapping.
+
+
+%\printbibliography
+\end{document}

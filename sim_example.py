@@ -2,16 +2,17 @@
 
 import simulation
 import numpy as np
-import mpc_controller
+import pyomo_controller
+from functools import partial
 
-def controller(time, state):
-    return np.array([0.1, 0.1])
+controller = partial(pyomo_controller.mpcController,
+                     finalState=[1.0, 0.0, 0.0, np.pi/2],
+                     plot=True)
 
 sim = simulation.Simulation(
         np.array([0.0, 0.0, 0.0, 0.0]),
-        10.0,
-        mpc_controller.mpc_controller)
+        5.0,
+        controller)
 
-sim.runSimulation(5)
-
+sim.runSimulation(10.0)
 simulation.plotSimulation(sim, 'test.jpg')

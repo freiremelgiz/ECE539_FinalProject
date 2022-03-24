@@ -58,20 +58,19 @@ class Simulation:
         times = [0.0]
         states = [self.initialState]
 
-        time = 0.0
         startTime = datetime.now()
         iterCount = 0
-        while(time < duration):
-            print(f"{iterCount}: Sim time: {time}/{duration}     Wall Time: {datetime.now()-startTime}")
+        while(times[-1] < duration):
+            print(f"{iterCount}: Sim time: {times[-1]}/{duration}     Wall Time: {datetime.now()-startTime}")
 
             self.control = self.controller(times[-1], states[-1])
             
-            rk45 = RK45(self.dynamics, time, states[-1], self.timeStep)
+            rk45 = RK45(self.dynamics, times[-1], states[-1], times[-1] + self.timeStep)
             while(rk45.status == 'running'):
                 rk45.step()
                 times.append(rk45.t)
                 states.append(rk45.y)
-            time += self.timeStep
+
             iterCount += 1
             
 
@@ -97,6 +96,10 @@ def plotSimulation(
 
     plt.subplot(111)
     plt.plot(sim.states[:,0], sim.states[:,1])
+    all_min = min(np.min(sim.states[:,0]), np.min(sim.states[:,1])) - 0.5
+    all_max = max(np.max(sim.states[:,0]), np.max(sim.states[:,1])) + 0.5
+    plt.xlim([all_min, all_max])
+    plt.ylim([all_min, all_max])
     plt.title("Trajectory")
 
     if(fileName is not None):

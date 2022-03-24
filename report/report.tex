@@ -70,7 +70,17 @@ can observe the following indexing mappings:
 \end{align}
 \end{subequations}
 where $\vect{z}_{[i,\ j]} \triangleq (z_i, z_{i+1}, \ldots, z_{j-1})^T$.
-
+It follows that:
+\begin{subequations}
+  \begin{align}
+    x_i &= z_{4i},\\
+    y_i &= z_{4i+1},\\
+    v_i &= z_{4i+2},\\
+    \psi_i &= z_{4i+3},\\
+    \dot{v}_i &= z_{4N+2i+4},\\
+    \dot{\psi}_i &= z_{4N+2i+5}.
+  \end{align}
+\end{subequations}
 \subsection*{General Nonlinear Constraints}
 We require $4N$ general nonlinear constraints (i.e., $m=4N$). Begin by
 letting $\vect{g}^L = \vect{g}^U = \vect{0}_{m\times 1}$. Then, the

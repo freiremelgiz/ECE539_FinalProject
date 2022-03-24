@@ -1,4 +1,4 @@
-from cyipopt import minimize_ipopt
+#from cyipopt import minimize_ipopt
 from scipy.optimize import minimize, Bounds
 import numpy as np
 

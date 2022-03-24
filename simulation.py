@@ -9,10 +9,10 @@ class Simulation:
     # The initial state (x, y, v, psi)
     initial: np.ndarray
 
-    # The controller (time, state) -> controll (e.g. v dot, psi dot)
+    # The controller (time, state) -> control (e.g. v dot, psi dot)
     controller: Callable[[float, np.ndarray], np.ndarray]
 
-    # The rate (hz) of the controller
+    # The rate (Hz) of the controller
     controlRate: float
 
     # Time step
@@ -32,7 +32,7 @@ class Simulation:
         Initialize the simulator
 
         :param initialState np.ndarray: The initial state
-        :param controlRate float: The conntrol rate (hz)
+        :param controlRate float: The control rate (Hz)
         :param controller Callable[[float, np.ndarray], np.ndarray]: The controlelr
             callback
         """

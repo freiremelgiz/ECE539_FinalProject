@@ -45,7 +45,7 @@ class MPC():
         z0 = np.zeros((self.n,1))
         z0[0:4] = self.x0
         # Solve problem
-        res = minimize(self._objective, z0, method='trust-constr',
+        res = minimize(self._objective, z0,
                 bounds=ublb, constraints=self.cst)
         # Return or print
         print(res)
@@ -101,4 +101,5 @@ if __name__=="__main__":
     controller = MPC(N=1)
     x0 = np.zeros((4,1))
     xf = np.zeros((4,1))
+    xf[0] = 5
     controller(x0, xf)

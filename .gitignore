@@ -4,6 +4,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# IMG ext
+*.png
+*.jpg
+
 # Tex extensions
 *.log
 *.out

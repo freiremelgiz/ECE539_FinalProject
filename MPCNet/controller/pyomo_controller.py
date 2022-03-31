@@ -6,7 +6,11 @@ import matplotlib.pyplot as plt
 
 previousStates = None
 previousControls = None
-def mpcController(time, initialState, finalState, plot=False):
+def mpcController(initialState, finalState, plot=False):
+    # TODO: Handle np.ndarray (4,1) shape more gracefully than this
+    initialState = initialState[:,0].tolist()
+    finalState = finalState[:,0].tolist()
+
     global previousStates, previousControls
     # Hyper parameters
     n = 30 # Time horizon

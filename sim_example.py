@@ -6,7 +6,7 @@ import pyomo_controller
 from functools import partial
 
 controller = partial(pyomo_controller.mpcController,
-                     finalState=[1.0, 0.0, 0.0, np.pi/2],
+                     finalState=[100.0, 2.0, 0.0, 0.0],
                      plot=True)
 
 sim = simulation.Simulation(
@@ -15,4 +15,4 @@ sim = simulation.Simulation(
         controller)
 
 sim.runSimulation(10.0)
-simulation.plotSimulation(sim, 'test.jpg')
+simulation.plotSimulation(sim, 'test.png')

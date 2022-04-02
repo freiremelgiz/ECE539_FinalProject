@@ -1,8 +1,8 @@
 #!/bin/env python3
 
-import simulation
+from MPCNet.simulation import simulation
 import numpy as np
-import pyomo_controller
+from MPCNet.controller import pyomo_controller
 from functools import partial
 
 #controller = partial(pyomo_controller.mpcController,

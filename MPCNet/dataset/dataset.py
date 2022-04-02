@@ -11,6 +11,8 @@ controller(x_0, x_f) function to generate labels.
 import numpy as np
 from numpy.random import seed
 from numpy.random import rand
+import pandas as pd
+from tqdm import tqdm
 
 # seed random number generator (repeatability)
 #seed(1)
@@ -37,16 +39,23 @@ class Dataset():
     # Generate dataset and fill X and y
     # Pass a controller(x0, xf) object to this
     def generate(self, controller):
-        for i in range(self.K):
+        for i in tqdm(range(self.K)):
             x0 = self._get_rand_x0()
             xf = self._get_rand_xf(x0)
             self.X[i,:] = np.hstack((x0.T,xf.T))
-            self.y[i] = controller(x0, xf).T
+            self.y[i] = controller(x0.flatten(), xf.flatten()).T
 
     # Save the dataset [X, y] as a .csv file
     def save(self):
         np.savetxt('data.csv', np.hstack((self.X, self.y)),
                 delimiter=',')
+
+    @classmethod
+    def load(cls, fileName):
+        raw = pd.read_csv(fileName, header=None).to_numpy()
+        X = raw[:,0:8]
+        y = raw[:,8:-1]
+        return (X,y)
 
 # Test the class
 if __name__=="__main__":

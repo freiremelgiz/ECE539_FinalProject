@@ -6,23 +6,6 @@ from datetime import datetime
 
 class Simulation:
 
-    # The initial state (x, y, v, psi)
-    initial: np.ndarray
-
-    # The controller (time, state) -> control (e.g. v dot, psi dot)
-    controller: Callable[[float, np.ndarray], np.ndarray]
-
-    # The rate (Hz) of the controller
-    controlRate: float
-
-    # Time step
-    timeStep: float
-
-    # Simulated states
-    states: np.ndarray
-    # Simulated time steps
-    times: np.ndarray
-
     def __init__(
             self,
             initialState: np.ndarray,
@@ -106,4 +89,7 @@ def plotSimulation(
         plt.savefig(fileName)
     else:
         plt.show()
+
+    plt.clf()
+    plt.close()
 

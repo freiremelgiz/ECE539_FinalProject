@@ -24,25 +24,30 @@ class Dataset():
         self.x_lb = np.array((-200, -200, 0, -np.pi)).reshape((4,1))
         self.x_ub = np.array((200, 200, 32, np.pi)).reshape((4,1))
         # Initialize dataset matrices
-        self.X = np.zeros((K,8)) # Feature matrix
+        self.X = np.zeros((K,5)) # Feature matrix
         self.y = np.zeros((K,2)) # Label matrix
 
-    # Get a random initial state within the following bounds:
-    # x \in [x_lb ,x_ub]
+    # Get an initial state with speed within bounds:
+    # v \in [v_lb, v_ub]
     def _get_rand_x0(self):
-        return (self.x_ub - self.x_lb)*rand(4,1) + self.x_lb
+        x0 = np.zeros((4,1))
+        x0[2] = (self.x_ub[2]-self.x_lb[2])*rand(1,1) + self.x_lb[2]
+        return x0
 
     # Get a random final state given initial state x0
-    def _get_rand_xf(self, x0): # TODO: Make feasible
+    def _get_rand_xf(self, x0): # NOTE: x0 not used currently
         return (self.x_ub - self.x_lb)*rand(4,1) + self.x_lb
 
     # Generate dataset and fill X and y
     # Pass a controller(x0, xf) object to this
     def generate(self, controller):
+        x = np.zeros(5) # the i-th feature
         for i in tqdm(range(self.K)):
             x0 = self._get_rand_x0()
             xf = self._get_rand_xf(x0)
-            self.X[i,:] = np.hstack((x0.T,xf.T))
+            x[0] = x0[2]
+            x[1:] = xf.T
+            self.X[i,:] = x
             self.y[i] = controller(x0.flatten(), xf.flatten()).T
 
     # Save the dataset [X, y] as a .csv file
@@ -53,8 +58,8 @@ class Dataset():
     @classmethod
     def load(cls, fileName):
         raw = pd.read_csv(fileName, header=None).to_numpy()
-        X = raw[:,0:8]
-        y = raw[:,8:-1]
+        X = raw[:,0:5]
+        y = raw[:,5:-1]
         return (X,y)
 
 # Test the class

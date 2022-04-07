@@ -63,7 +63,7 @@ class Simulation:
         while(times[-1] < duration):
             print(f"{iterCount}: Sim time: {times[-1]}/{duration}     Wall Time: {datetime.now()-startTime}")
 
-            self.control = self.controller(times[-1], states[-1])
+            self.control = self.controller(states[-1])
             
             rk45 = RK45(self.dynamics, times[-1], states[-1], times[-1] + self.timeStep)
             while(rk45.status == 'running'):

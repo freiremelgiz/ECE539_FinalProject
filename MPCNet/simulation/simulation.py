@@ -10,6 +10,7 @@ class Simulation:
     initial: np.ndarray
 
     # The controller (time, state) -> control (e.g. v dot, psi dot)
+    #controller: Callable[[float, np.ndarray], np.ndarray]
     controller: Callable[[float, np.ndarray], np.ndarray]
 
     # The rate (Hz) of the controller
@@ -49,22 +50,24 @@ class Simulation:
 
     def runSimulation(
             self,
-            duration: float):
+            duration: float,
+            goal: np.ndarray):
         """
         Run the simulation
 
         :param duration float: Duration to run it for.
+        :param goal np.ndarray: The final (goal) state
         """
         times = [0.0]
         states = [self.initialState]
+        reached_goal = False
 
         startTime = datetime.now()
         iterCount = 0
-        while(times[-1] < duration):
+        while(times[-1] < duration and not reached_goal):
             print(f"{iterCount}: Sim time: {times[-1]}/{duration}     Wall Time: {datetime.now()-startTime}")
 
             self.control = self.controller(states[-1])
-            
             rk45 = RK45(self.dynamics, times[-1], states[-1], times[-1] + self.timeStep)
             while(rk45.status == 'running'):
                 rk45.step()
@@ -72,7 +75,10 @@ class Simulation:
                 states.append(rk45.y)
 
             iterCount += 1
-            
+
+            # Check goal
+            if np.linalg.norm(goal[0:2]-states[-1][0:2]) <= 5:
+                reached_goal = True
 
         self.times = np.array(times)
         self.states = np.array(states)

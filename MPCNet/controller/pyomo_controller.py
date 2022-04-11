@@ -9,8 +9,8 @@ previousControls = None
 def mpcController(initialState, finalState, plot=False):
     global previousStates, previousControls
     # Hyper parameters
-    n = 30 # Time horizon
-    dt = 0.2 # Timestep between constraints
+    n = 1100 # Time horizon
+    dt = 0.01 # Timestep between constraints
 
     # Create the model
     model = pyo.ConcreteModel()
@@ -39,8 +39,51 @@ def mpcController(initialState, finalState, plot=False):
             # Heading
             return (None, None)
 
+    # Nonconvex objective
+    def get_ncvx_obj(model, n):
+        finalStateWeight0 = 100.0
+        finalStateWeight1 = 100.0
+        finalStateWeight2 = 10.0
+        finalStateWeight3 = 10000.0
+        term_expr = finalStateWeight0 * (model.state[n,0] - finalState[0])**2 +\
+                finalStateWeight1 * (model.state[n,1] - finalState[1])**2 +\
+                finalStateWeight2 * (model.state[n,2] - finalState[2])**2 +\
+                finalStateWeight3 * (model.state[n,3] - finalState[3])**2
+        accsum_expr = sum([dv**2 for dv in model.control[:,0]])
+        angsum_expr = 0.0
+        for k in range(n):
+            angsum_expr += (model.state[k,2]**2)*(model.control[k,1]**2)
+        obj = pyo.Objective(expr = term_expr + accsum_expr + angsum_expr)
+        return obj
+
+    # Convex objective
+    def get_cvx_obj(model, n):
+        controlWeight0 = 100.0
+        controlWeight1 = 100.0
+        stateWeight0 = 0.0
+        stateWeight1 = 0.0
+        stateWeight2 = 0.0
+        stateWeight3 = 0.0
+        finalStateWeight0 = 1000.0
+        finalStateWeight1 = 1000.0
+        finalStateWeight2 = 10.0
+        finalStateWeight3 = 100000.0
+        obj = pyo.Objective(expr =
+                finalStateWeight0 * (model.state[n-1,0] - finalState[0])**2 +
+                finalStateWeight1 * (model.state[n-1,1] - finalState[1])**2 +
+                finalStateWeight2 * (model.state[n-1,2] - finalState[2])**2 +
+                finalStateWeight3 * (model.state[n-1,3] - finalState[3])**2 +
+                stateWeight0 * sum([(s-finalState[0])**2 for s in model.state[:,0]]) +
+                stateWeight1 * sum([(s-finalState[1])**2 for s in model.state[:,1]]) +
+                stateWeight2 * sum([(s-finalState[2])**2 for s in model.state[:,2]]) +
+                stateWeight3 * sum([(s-finalState[3])**2 for s in model.state[:,3]]) +
+                controlWeight0 * sum([c**2 for c in model.control[:,0]]) +
+                controlWeight1 * sum([c**2 for c in model.control[:,1]]),
+                sense=pyo.minimize)
+        return obj
+
     # Optimization variables
-    model.state = pyo.Var(range(n), range(4), domain=pyo.Reals, bounds=stateBounds)
+    model.state = pyo.Var(range(n+1), range(4), domain=pyo.Reals, bounds=stateBounds)
     model.control = pyo.Var(range(n), range(2), domain=pyo.Reals, bounds=actuationBounds)
 
     # Initial conditions
@@ -50,42 +93,22 @@ def mpcController(initialState, finalState, plot=False):
     model.limits.add(model.state[0,3] == initialState[3])
 
     # Dynamics Constraints
-    for t in range(1,n):
-        model.limits.add(model.state[t,0] == model.state[t-1,0] + dt*model.state[t-1,2]*pyo.cos(model.state[t-1,3]))
-        model.limits.add(model.state[t,1] == model.state[t-1,1] + dt*model.state[t-1,2]*pyo.sin(model.state[t-1,3]))
-        model.limits.add(model.state[t,2] == model.state[t-1,2] + dt*model.control[t-1,0])
-        model.limits.add(model.state[t,3] == model.state[t-1,3] + dt*model.control[t-1,1])
+    for k in range(n):
+        model.limits.add(model.state[k+1,0] == model.state[k,0] + dt*model.state[k,2]*pyo.cos(model.state[k,3]))
+        model.limits.add(model.state[k+1,1] == model.state[k,1] + dt*model.state[k,2]*pyo.sin(model.state[k,3]))
+        model.limits.add(model.state[k+1,2] == model.state[k,2] + dt*model.control[k,0])
+        model.limits.add(model.state[k+1,3] == model.state[k,3] + dt*model.control[k,1])
 
-    # Final objective is a weight sum of controls squared and final distance
-    # from target state.
-    controlWeight0 = 0.0
-    controlWeight1 = 0.0
-    stateWeight0 = 0.0
-    stateWeight1 = 0.0
-    stateWeight2 = 0.0
-    stateWeight3 = 0.0
-    finalStateWeight0 = 10.0
-    finalStateWeight1 = 10.0
-    finalStateWeight2 = 0.0
-    finalStateWeight3 = 0.0
-    model.OBJ = pyo.Objective(expr = 
-            finalStateWeight0 * (model.state[n-1,0] - finalState[0])**2 +
-            finalStateWeight1 * (model.state[n-1,1] - finalState[1])**2 +
-            finalStateWeight2 * (model.state[n-1,2] - finalState[2])**2 +
-            finalStateWeight3 * (model.state[n-1,3] - finalState[3])**2 +
-            stateWeight0 * sum([(s-finalState[0])**2 for s in model.state[:,0]]) +
-            stateWeight1 * sum([(s-finalState[1])**2 for s in model.state[:,1]]) +
-            stateWeight2 * sum([(s-finalState[2])**2 for s in model.state[:,2]]) +
-            stateWeight3 * sum([(s-finalState[3])**2 for s in model.state[:,3]]) +
-            controlWeight0 * sum([c**2 for c in model.control[:,0]]) +
-            controlWeight1 * sum([c**2 for c in model.control[:,1]]),
-            sense=pyo.minimize)
+    # Get Obj function
+    #model.OBJ = get_ncvx_obj(model,n)
+    model.OBJ = get_cvx_obj(model,n)
 
+    # Set optimizer
     opt = pyo.SolverFactory('ipopt')
-    
+
     # Replace lines to get solver output
-    # opt.solve(model, tee=True) 
-    opt.solve(model) 
+    #opt.solve(model, tee=True)
+    opt.solve(model)
 
     control_0 = model.control[0,0].value
     control_1 = model.control[0,1].value
@@ -96,10 +119,15 @@ def mpcController(initialState, finalState, plot=False):
         vs = np.array([model.state[t,2].value for t in range(n)])
         hs = np.array([model.state[t,3].value for t in range(n)])
         plt.plot(xs, ys)
-        all_min = min(np.min(xs), np.min(ys)) - 0.5
-        all_max = max(np.max(xs), np.max(ys)) + 0.5
-        plt.xlim([all_min, all_max])
-        plt.ylim([all_min, all_max])
+        axes_equal = False
+        if axes_equal:
+            all_min = min(np.min(xs), np.min(ys)) - 0.5
+            all_max = max(np.max(xs), np.max(ys)) + 0.5
+            plt.xlim([all_min, all_max])
+            plt.ylim([all_min, all_max])
+        else:
+            plt.xlim([np.min(xs)-0.5, np.max(xs)+0.5])
+            plt.ylim([np.min(ys)-0.5, np.max(ys)+0.5])
         plt.savefig("traj.png")
 
     return np.array([control_0, control_1])

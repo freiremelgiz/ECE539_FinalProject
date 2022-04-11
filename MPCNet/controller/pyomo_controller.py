@@ -82,8 +82,7 @@ def mpcController(initialState, finalState, plot=False, stopRadius=2.0):
                 stateWeight2 * sum([(s-finalState[2])**2 for s in model.state[:,2]]) +
                 stateWeight3 * sum([(s-finalState[3])**2 for s in model.state[:,3]]) +
                 controlWeight0 * sum([c**2 for c in model.control[:,0]]) +
-                controlWeight1 * sum([c**2 for c in model.control[:,1]]),
-                sense=pyo.minimize)
+                controlWeight1 * sum([c**2 for c in model.control[:,1]]))
         return obj
 
     # Optimization variables

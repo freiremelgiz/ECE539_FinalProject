@@ -12,7 +12,7 @@ class MPCParams():
     # Objective Params:
     R = np.diag([100.0, 100.0])
     Q = np.diag([5.0, 5.0, 0.0, 0.0])
-    Qf = np.diag([10000.0, 10000.0, 100.0, 100000.0])
+    Qf = 1000*np.diag([100.0, 100.0, 1.0, 1000.0])
 
 
 # Controller class for MPC
@@ -97,10 +97,10 @@ class MPC():
     # Convex Objective
     def _cvx_obj(self, model):
         obj = pyo.Objective(expr =
-                self.Qf[0][0]*(model.state[n-1,0] - self.xf[0])**2 +
-                self.Qf[1][1]*(model.state[n-1,1] - self.xf[1])**2 +
-                self.Qf[2][2]*(model.state[n-1,2] - self.xf[2])**2 +
-                self.Qf[3][3]*(model.state[n-1,3] - self.xf[3])**2 +
+                self.Qf[0][0]*(model.state[self.N-1,0] - self.xf[0])**2 +
+                self.Qf[1][1]*(model.state[self.N-1,1] - self.xf[1])**2 +
+                self.Qf[2][2]*(model.state[self.N-1,2] - self.xf[2])**2 +
+                self.Qf[3][3]*(model.state[self.N-1,3] - self.xf[3])**2 +
                 self.Q[0][0]*sum([(s - self.xf[0])**2 for s in
                     model.state[:,0]]) +
                 self.Q[1][1]*sum([(s - self.xf[1])**2 for s in

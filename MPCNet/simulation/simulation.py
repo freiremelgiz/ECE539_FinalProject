@@ -66,6 +66,7 @@ class Simulation:
         """
         times = [0.0]
         states = [self.initialState]
+        inputs = []
 
         startTime = datetime.now()
         iterCount = 0
@@ -80,6 +81,7 @@ class Simulation:
                 rk45.step()
                 times.append(rk45.t)
                 states.append(rk45.y)
+                inputs.append(self.control)
 
             iterCount += 1
 
@@ -89,10 +91,11 @@ class Simulation:
 
         self.times = np.array(times)
         self.states = np.array(states)
+        self.inputs = np.array(inputs)
 
     # Is the passed point r = (x,y) near the goal state?
     def _is_near_goal(self, r):
-        return np.linalg.norm(self.finalState[0:2] - r) <= 5
+        return np.linalg.norm(self.finalState[0:2] - r) <= 1
 
     def dynamics(self, time, state) -> np.ndarray:
         x = state[0]
@@ -106,21 +109,38 @@ class Simulation:
         derivative[3] = self.control[1]
         return derivative
 
-def plotSimulation(
+def plot_path(
         sim: Simulation,
         fileName: str = None):
     plt.figure()
 
     plt.subplot(111)
     plt.plot(sim.states[:,0], sim.states[:,1])
+    plt.scatter(sim.states[:,0], sim.states[:,1], c=sim.states[:,2])
     all_min = min(np.min(sim.states[:,0]), np.min(sim.states[:,1])) - 0.5
     all_max = max(np.max(sim.states[:,0]), np.max(sim.states[:,1])) + 0.5
     plt.xlim([all_min, all_max])
     plt.ylim([all_min, all_max])
-    plt.title("Trajectory")
+    plt.title("Path (x,y)")
 
     if(fileName is not None):
         plt.savefig(fileName)
     else:
         plt.show()
 
+
+def plot_input(
+        sim: Simulation,
+        fileName: str = None):
+    plt.figure()
+    plt.subplot(211)
+    plt.plot(sim.times[:-1], sim.inputs[:,0])
+    plt.title("Acceleration v_dot")
+    plt.subplot(212)
+    plt.plot(sim.times[:-1], sim.inputs[:,1])
+    plt.title("Angular Velocity psi_dot")
+
+    if(fileName is not None):
+        plt.savefig(fileName)
+    else:
+        plt.show()

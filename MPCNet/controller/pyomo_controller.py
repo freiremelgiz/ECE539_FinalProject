@@ -6,12 +6,15 @@ import matplotlib.pyplot as plt
 
 previousStates = None
 previousControls = None
-def mpcController(initialState, finalState, plot=False):
+def mpcController(initialState, finalState, plot=False, stopRadius=2.0):
     global previousStates, previousControls
     # Hyper parameters
     H = 2 # [sec] Time horizon
     dt = 0.01 # Timestep between constraints
     n = round(H/dt) # samples
+
+    if(np.linalg.norm(initialState[0:2] - finalState[0:2]) < stopRadius):
+        return np.array([0.0, 0.0])
 
     # Create the model
     model = pyo.ConcreteModel()

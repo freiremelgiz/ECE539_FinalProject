@@ -51,7 +51,8 @@ class Simulation:
     def runSimulation(
             self,
             duration: float,
-            goal: np.ndarray):
+            goal: np.ndarray,
+            quiet=False):
         """
         Run the simulation
 
@@ -64,8 +65,10 @@ class Simulation:
 
         startTime = datetime.now()
         iterCount = 0
+
         while(times[-1] < duration and not reached_goal):
-            print(f"{iterCount}: Sim time: {times[-1]}/{duration}     Wall Time: {datetime.now()-startTime}")
+            if(not quiet):
+                print(f"{iterCount}: Sim time: {times[-1]}/{duration}     Wall Time: {datetime.now()-startTime}")
 
             self.control = self.controller(states[-1])
             rk45 = RK45(self.dynamics, times[-1], states[-1], times[-1] + self.timeStep)

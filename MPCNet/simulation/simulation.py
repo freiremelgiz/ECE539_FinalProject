@@ -49,7 +49,8 @@ class Simulation:
 
     def runSimulation(
             self,
-            duration: float):
+            duration: float,
+            quiet=False):
         """
         Run the simulation
 
@@ -61,7 +62,8 @@ class Simulation:
         startTime = datetime.now()
         iterCount = 0
         while(times[-1] < duration):
-            print(f"{iterCount}: Sim time: {times[-1]}/{duration}     Wall Time: {datetime.now()-startTime}")
+            if(not quiet):
+                print(f"{iterCount}: Sim time: {times[-1]}/{duration}     Wall Time: {datetime.now()-startTime}")
 
             self.control = self.controller(times[-1], states[-1])
             

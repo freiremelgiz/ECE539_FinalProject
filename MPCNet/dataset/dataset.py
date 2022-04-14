@@ -21,8 +21,8 @@ class Dataset():
     def __init__(self, K=10):
         self.K = K # Number of samples
         # State bounds
-        self.x_lb = np.array((-200, -200, 0, -np.pi)).reshape((4,1))
-        self.x_ub = np.array((200, 200, 32, np.pi)).reshape((4,1))
+        self.x_lb = np.array((0, -200, 0, -np.pi/2)).reshape((4,1))
+        self.x_ub = np.array((200, 200, 32, np.pi/2)).reshape((4,1))
         # Initialize dataset matrices
         self.X = np.zeros((K,5)) # Feature matrix
         self.y = np.zeros((K,2)) # Label matrix
@@ -51,15 +51,15 @@ class Dataset():
             self.y[i] = controller(x0.flatten(), xf.flatten()).T
 
     # Save the dataset [X, y] as a .csv file
-    def save(self):
-        np.savetxt('data.csv', np.hstack((self.X, self.y)),
+    def save(self, fileName='data.csv'):
+        np.savetxt(fileName, np.hstack((self.X, self.y)),
                 delimiter=',')
 
     @classmethod
     def load(cls, fileName):
         raw = pd.read_csv(fileName, header=None).to_numpy()
         X = raw[:,0:5]
-        y = raw[:,5:-1]
+        y = raw[:,5:]
         return (X,y)
 
 # Test the class

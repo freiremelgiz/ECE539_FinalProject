@@ -9,8 +9,9 @@ previousControls = None
 def mpcController(initialState, finalState, plot=False, stopRadius=2.0):
     global previousStates, previousControls
     # Hyper parameters
-    n = 1100 # Time horizon
+    H = 2 # [sec] Time horizon
     dt = 0.01 # Timestep between constraints
+    n = round(H/dt) # samples
 
     if(np.linalg.norm(initialState[0:2] - finalState[0:2]) < stopRadius):
         return np.array([0.0, 0.0])
@@ -23,10 +24,10 @@ def mpcController(initialState, finalState, plot=False, stopRadius=2.0):
     def actuationBounds(model, t, i):
         if i == 0:
             # Acceleration
-            return (-2, 2)
+            return (-1.5, 1.0)
         else:
             # Heading velocity
-            return (-0.9, 0.9)
+            return (-0.7, 0.7)
 
     def stateBounds(model, t, i):
         if i == 0:
@@ -63,13 +64,13 @@ def mpcController(initialState, finalState, plot=False, stopRadius=2.0):
     def get_cvx_obj(model, n):
         controlWeight0 = 100.0
         controlWeight1 = 100.0
-        stateWeight0 = 0.0
-        stateWeight1 = 0.0
+        stateWeight0 = 5.0
+        stateWeight1 = 5.0
         stateWeight2 = 0.0
         stateWeight3 = 0.0
-        finalStateWeight0 = 1000.0
-        finalStateWeight1 = 1000.0
-        finalStateWeight2 = 10.0
+        finalStateWeight0 = 10000.0
+        finalStateWeight1 = 10000.0
+        finalStateWeight2 = 100.0
         finalStateWeight3 = 100000.0
         obj = pyo.Objective(expr =
                 finalStateWeight0 * (model.state[n-1,0] - finalState[0])**2 +
@@ -81,8 +82,7 @@ def mpcController(initialState, finalState, plot=False, stopRadius=2.0):
                 stateWeight2 * sum([(s-finalState[2])**2 for s in model.state[:,2]]) +
                 stateWeight3 * sum([(s-finalState[3])**2 for s in model.state[:,3]]) +
                 controlWeight0 * sum([c**2 for c in model.control[:,0]]) +
-                controlWeight1 * sum([c**2 for c in model.control[:,1]]),
-                sense=pyo.minimize)
+                controlWeight1 * sum([c**2 for c in model.control[:,1]]))
         return obj
 
     # Optimization variables

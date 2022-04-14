@@ -30,14 +30,14 @@ class Simulation:
             initialState: np.ndarray,
             finalState:np.ndarray,
             controlRate: float,
-            controller: Callable[[float, np.ndarray], np.ndarray]):
+            controller: Callable[[np.ndarray, np.ndarray], np.ndarray]):
         """
         Initialize the simulator
 
         :param initialState np.ndarray: The initial state
         :param finalState np.ndarray: The target final state
         :param controlRate float: The control rate (Hz)
-        :param controller Callable[[float, np.ndarray], np.ndarray]: The controlelr
+        :param controller Callable[[np.ndarray, np.ndarray], np.ndarray]: The controlelr
             callback
         """
         # Initial state
@@ -75,7 +75,7 @@ class Simulation:
             if(not quiet):
                 print(f"{iterCount}: Sim time: {times[-1]}/{duration}     Wall Time: {datetime.now()-startTime}")
 
-            self.control = self.controller(states[-1])
+            self.control = self.controller(states[-1], self.finalState)
             rk45 = RK45(self.dynamics, times[-1], states[-1], times[-1] + self.timeStep)
             while(rk45.status == 'running'):
                 rk45.step()

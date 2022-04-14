@@ -10,10 +10,7 @@ class NeighborController:
         self.X = X
         self.y = y
 
-    def getControl(self, initialState, finalState, stopRadius=2.0):
-
-        if(np.linalg.norm(initialState[0:2] - finalState[0:2]) < stopRadius):
-            return np.array([0.0, 0.0])
+    def getControl(self, initialState, finalState):
 
         relativeInitial, relativeFinal = utils.absoluteToRelative(initialState, finalState)
 

@@ -37,7 +37,7 @@ class MPC():
         self.model = self._init_model()
 
     # Solve the MPC problem with initial state x0 and return u0
-    def __call__(self, x0):
+    def __call__(self, x0, goalState):
         # Initialize parameter
         self.model.x0[0] = x0[0]
         self.model.x0[1] = x0[1]

@@ -13,24 +13,27 @@ from numpy.random import seed
 from numpy.random import rand
 import pandas as pd
 from tqdm import tqdm
+from ..controller import utils
 
 # seed random number generator (repeatability)
 #seed(1)
 
 class Dataset():
-    def __init__(self, K=10):
-        self.K = K # Number of samples
+    def __init__(self, numRuns=10, samplesPerRun=10):
+        self.numRuns = numRuns # Number of runs
+        self.numSamplesPerRun = samplesPerRun # Number of samples per run
+        self.K = numRuns * samplesPerRun
         # State bounds
-        self.x_lb = np.array((0, -200, 0, -np.pi/2)).reshape((4,1))
-        self.x_ub = np.array((200, 200, 32, np.pi/2)).reshape((4,1))
+        self.x_lb = np.array([-100, -100, 0, -np.pi/2], dtype=np.double).reshape((4,1))
+        self.x_ub = np.array([100, 100, 32, np.pi/2], dtype=np.double).reshape((4,1))
         # Initialize dataset matrices
-        self.X = np.zeros((K,5)) # Feature matrix
-        self.y = np.zeros((K,2)) # Label matrix
+        self.X = [] # Feature matrix
+        self.y = [] # Label matrix
 
     # Get an initial state with speed within bounds:
     # v \in [v_lb, v_ub]
     def _get_rand_x0(self):
-        x0 = np.zeros((4,1))
+        x0 = np.zeros((4,1), dtype=np.double)
         x0[2] = (self.x_ub[2]-self.x_lb[2])*rand(1,1) + self.x_lb[2]
         return x0
 
@@ -41,23 +44,43 @@ class Dataset():
     # Generate dataset and fill X and y
     # Pass a controller(x0, xf) object to this
     def generate(self, controller):
-        x = np.zeros(5) # the i-th feature
-        for i in tqdm(range(self.K)):
+        for i in tqdm(range(self.numRuns)):
             x0 = self._get_rand_x0()
             xf = self._get_rand_xf(x0)
-            x[0] = x0[2]
-            x[1:] = xf.T
-            self.X[i,:] = x
-            self.y[i] = controller(x0.flatten(), xf.flatten()).T
+            
+            traj, control = controller(x0.flatten(), xf.flatten(), fullTrajectory=True)
+            
+            indices = np.random.choice(traj.shape[0], self.numSamplesPerRun, replace=False)
+            initiaStates = traj[indices, :]
+            controls = control[indices, :]
+            
+            for j in range(self.numSamplesPerRun):
+                relativeX0, relativeXf = utils.absoluteToRelative(initiaStates[j,:], xf)
+                control = controls[j,:]
+                inputVector = np.array([
+                    relativeX0[0],
+                    relativeXf[0],
+                    relativeXf[1],
+                    relativeXf[2],
+                    relativeXf[3]
+                ], dtype=np.double)
+                self.X.append(inputVector.reshape((1, 5)))
+                self.y.append(control.reshape((1,2)))
+                if(relativeXf[0] < 10.5 and relativeXf[0]>9.5 and relativeXf[1] < 0.5 and relativeXf[1] > -0.5):
+                    import ipdb
+                    ipdb.set_trace()
+
 
     # Save the dataset [X, y] as a .csv file
     def save(self, fileName='data.csv'):
-        np.savetxt(fileName, np.hstack((self.X, self.y)),
+        X = np.vstack(self.X).reshape((self.K, 5))
+        y = np.vstack(self.y).reshape((self.K, 2))
+        np.savetxt(fileName, np.hstack((X, y)),
                 delimiter=',')
 
     @classmethod
     def load(cls, fileName):
-        raw = pd.read_csv(fileName, header=None).to_numpy()
+        raw = pd.read_csv(fileName, header=None).to_numpy(dtype=np.double)
         X = raw[:,0:5]
         y = raw[:,5:]
         return (X,y)
@@ -69,7 +92,7 @@ if __name__=="__main__":
         return np.ones((2,1))
 
     # Create class
-    dset = Dataset(K=5)
+    dset = Dataset(numRuns=3, samplesPerRun=10)
     assert(not dset.y.any())
     # Generate data
     dset.generate(controller)

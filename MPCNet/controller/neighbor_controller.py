@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import numpy as np
 import pandas as pd
 from . import utils
@@ -21,7 +20,11 @@ class NeighborController:
             relativeFinal[2],
             relativeFinal[3]
         ])
+        
+        cost = np.sum((self.X[:,:4] - newState[:4])**2, axis=1)
+        cost += (np.pi/2 - np.abs(np.abs(self.X[:,4] - newState[4]) - np.pi/2))**2
 
-        index = np.argmin(np.sum((self.X - newState)**2, axis=1), axis=0)
+
+        index = np.argmin(cost, axis=0)
 
         return self.y[index,:].reshape((2))

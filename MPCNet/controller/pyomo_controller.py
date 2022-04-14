@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 previousStates = None
 previousControls = None
-def mpcController(initialState, finalState, plot=False):
+def mpcController(initialState, finalState, plot=False, fullTrajectory=False):
     global previousStates, previousControls
     # Hyper parameters
     H = 2 # [sec] Time horizon
@@ -130,4 +130,21 @@ def mpcController(initialState, finalState, plot=False):
             plt.ylim([np.min(ys)-0.5, np.max(ys)+0.5])
         plt.savefig("traj.png")
 
+    if fullTrajectory:
+        traj = np.array([
+            np.array([
+                model.state[t,0].value,
+                model.state[t,1].value,
+                model.state[t,2].value,
+                model.state[t,3].value
+            ]) for t in range(n)
+        ]).reshape(n, 4)
+        control = np.array([
+            np.array([
+                model.control[t,0].value,
+                model.control[t,1].value
+            ]) for t in range(n)
+        ]).reshape(n, 2)
+        return (traj, control)
+        
     return np.array([control_0, control_1])

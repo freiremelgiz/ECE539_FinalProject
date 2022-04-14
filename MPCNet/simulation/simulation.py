@@ -30,7 +30,8 @@ class Simulation:
             initialState: np.ndarray,
             finalState:np.ndarray,
             controlRate: float,
-            controller: Callable[[np.ndarray, np.ndarray], np.ndarray]):
+            controller: Callable[[np.ndarray, np.ndarray], np.ndarray],
+            stopRadius:float = 5.0):
         """
         Initialize the simulator
 
@@ -44,6 +45,8 @@ class Simulation:
         self.initialState = initialState
         # Final state
         self.finalState = finalState
+        # Stopping radius
+        self.stopRadius = stopRadius
         self.reached_goal = self._is_near_goal(initialState[0:2])
 
         # Save the controller
@@ -95,7 +98,7 @@ class Simulation:
 
     # Is the passed point r = (x,y) near the goal state?
     def _is_near_goal(self, r):
-        return np.linalg.norm(self.finalState[0:2] - r) <= 1
+        return np.linalg.norm(self.finalState[0:2] - r) <= self.stopRadius
 
     def dynamics(self, time, state) -> np.ndarray:
         x = state[0]

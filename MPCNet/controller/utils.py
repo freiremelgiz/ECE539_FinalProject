@@ -21,7 +21,7 @@ def absoluteToRelative(initialState, finalState):
     relativeFinalState[0] = relativeFinalPos[0]
     relativeFinalState[1] = relativeFinalPos[1]
 
-    relativeFinalState[3] -= initialState[3]
+    relativeFinalState[3] = relativeFinalState[3] - initialState[3]
 
     relativeInitState = np.array([
         initialState[2]

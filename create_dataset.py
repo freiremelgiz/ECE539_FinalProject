@@ -13,7 +13,7 @@ mpc = partial(mpcController,
             plot=False)
 
 # Create Dataset class
-dset = Dataset(numRuns=1000, samplesPerRun=100)
+dset = Dataset(numRuns=10000, samplesPerRun=100)
 dset.generate(mpc)
-dset.save('test.csv')
+dset.save('data5-1000000.csv')
 

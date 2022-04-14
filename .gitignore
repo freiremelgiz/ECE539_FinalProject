@@ -3,6 +3,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+data5-1000000.csv
 
 # IMG ext
 *.png

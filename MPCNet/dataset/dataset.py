@@ -24,8 +24,8 @@ class Dataset():
         self.numSamplesPerRun = samplesPerRun # Number of samples per run
         self.K = numRuns * samplesPerRun
         # State bounds
-        self.x_lb = np.array([-100, -100, 0, -np.pi/2], dtype=np.double).reshape((4,1))
-        self.x_ub = np.array([100, 100, 32, np.pi/2], dtype=np.double).reshape((4,1))
+        self.x_lb = np.array([-200, -200, 0, -np.pi/2], dtype=np.double).reshape((4,1))
+        self.x_ub = np.array([200, 200, 32, np.pi/2], dtype=np.double).reshape((4,1))
         # Initialize dataset matrices
         self.X = [] # Feature matrix
         self.y = [] # Label matrix
@@ -66,9 +66,6 @@ class Dataset():
                 ], dtype=np.double)
                 self.X.append(inputVector.reshape((1, 5)))
                 self.y.append(control.reshape((1,2)))
-                if(relativeXf[0] < 10.5 and relativeXf[0]>9.5 and relativeXf[1] < 0.5 and relativeXf[1] > -0.5):
-                    import ipdb
-                    ipdb.set_trace()
 
 
     # Save the dataset [X, y] as a .csv file

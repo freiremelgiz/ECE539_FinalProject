@@ -7,21 +7,10 @@ from functools import partial
 from MPCNet.controller.MPC import MPC, MPCParams
 
 
-### SIM EXAMPLE (100 Hz)
-#initial = np.array([0.0, 0.0, 0.0, 0.0])
-#final = np.array([20.0, 20.0, 0.0, np.pi/2])
-#controller = MPC(final, plot=True)
-#sim = simulation.Simulation(initial, final, 50.0, controller)
-#sim.runSimulation(20.0)
-#simulation.plot_path(sim, f"path_sim.png")
-#simulation.plot_input(sim, f"input_sim.png")
-
 ### SIM EXAMPLE (10 Hz)
 initial = np.array([0.0, 0.0, 0.0, 0.0])
 final = np.array([20.0, 20.0, 0.0, np.pi/2])
-params = MPCParams()
-params.dt = 0.1
-controller = MPC(final, params=params, plot=True)
+controller = MPC(plot=True)
 sim = simulation.Simulation(initial, final, 50.0, controller)
 sim.runSimulation(20.0)
 simulation.plot_path(sim, f"path_sim.png")

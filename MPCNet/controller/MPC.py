@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 class MPCParams():
     # Main Params
     H = 2 # [sec] Time horizon
-    dt = 0.01 # [sec] MPC sampling time
+    dt = 0.1 # [sec] MPC sampling time
     # Objective Params:
     R = np.diag([100.0, 100.0])
     Q = np.diag([5.0, 5.0, 0.0, 0.0])
@@ -16,11 +16,9 @@ class MPCParams():
 
 
 # Controller class for MPC
-# Callable: MPC(x0) -> u = (v_dot, psi_dot)
+# Callable: MPC(x0, xf) -> u = (v_dot, psi_dot)
 class MPC():
-    def __init__(self, goalState, params=MPCParams(), plot=False):
-        # Store goal state
-        self.xf = goalState # [x y v psi]
+    def __init__(self, params=MPCParams(), plot=False):
         # Store main parameters
         self.H = params.H # [sec] Time horizon
         self.dt = params.dt # [sec] MPC sampling time
@@ -36,15 +34,19 @@ class MPC():
         self.opt = pyo.SolverFactory('ipopt') # Optimizer
         self.model = self._init_model()
 
-    # Solve the MPC problem with initial state x0 and return u0
-    def __call__(self, x0, goalState):
-        # Initialize parameter
+    # Solve the MPC problem with initial state x0 and desired xf
+    # returns u0 (v_dot, psi_dot)
+    def __call__(self, x0, xf):
+        # Initialize parameters
         self.model.x0[0] = x0[0]
         self.model.x0[1] = x0[1]
         self.model.x0[2] = x0[2]
         self.model.x0[3] = x0[3]
-        #x0_d = {0: x0[0], 1: x0[1], 2:x0[2], 3:x0[3]}
-        #self.model.x0 = pyo.Param(range(4), initialize=x0_d)
+        self.model.xf[0] = xf[0]
+        self.model.xf[1] = xf[1]
+        self.model.xf[2] = xf[2]
+        self.model.xf[3] = xf[3]
+
         # Solve problem
         self.opt.solve(self.model)
 
@@ -80,10 +82,10 @@ class MPC():
 
     # Nonconvex Objective
     def _ncvx_obj(self, model):
-        term_expr = self.Qf[0][0]*(model.state[self.N,0] - self.xf[0])**2 + \
-                self.Qf[1][1]*(model.state[self.N,1] - self.xf[1])**2 + \
-                self.Qf[2][2]*(model.state[self.N,2] - self.xf[2])**2 + \
-                self.Qf[3][3]*(model.state[self.N,3] - self.xf[3])**2
+        term_expr = self.Qf[0][0]*(model.state[self.N,0] - model.xf[0])**2 + \
+                self.Qf[1][1]*(model.state[self.N,1] - model.xf[1])**2 + \
+                self.Qf[2][2]*(model.state[self.N,2] - model.xf[2])**2 + \
+                self.Qf[3][3]*(model.state[self.N,3] - model.xf[3])**2
         accsum_expr = sum([dv**2 for dv in model.input[:,0]])
         angsum_expr = 0.0
         for k in range(self.N):
@@ -97,17 +99,17 @@ class MPC():
     # Convex Objective
     def _cvx_obj(self, model):
         obj = pyo.Objective(expr =
-                self.Qf[0][0]*(model.state[self.N-1,0] - self.xf[0])**2 +
-                self.Qf[1][1]*(model.state[self.N-1,1] - self.xf[1])**2 +
-                self.Qf[2][2]*(model.state[self.N-1,2] - self.xf[2])**2 +
-                self.Qf[3][3]*(model.state[self.N-1,3] - self.xf[3])**2 +
-                self.Q[0][0]*sum([(s - self.xf[0])**2 for s in
+                self.Qf[0][0]*(model.state[self.N-1,0] - model.xf[0])**2 +
+                self.Qf[1][1]*(model.state[self.N-1,1] - model.xf[1])**2 +
+                self.Qf[2][2]*(model.state[self.N-1,2] - model.xf[2])**2 +
+                self.Qf[3][3]*(model.state[self.N-1,3] - model.xf[3])**2 +
+                self.Q[0][0]*sum([(s - model.xf[0])**2 for s in
                     model.state[:,0]]) +
-                self.Q[1][1]*sum([(s - self.xf[1])**2 for s in
+                self.Q[1][1]*sum([(s - model.xf[1])**2 for s in
                     model.state[:,1]]) +
-                self.Q[2][2]*sum([(s - self.xf[2])**2 for s in
+                self.Q[2][2]*sum([(s - model.xf[2])**2 for s in
                     model.state[:,2]]) +
-                self.Q[3][3]*sum([(s - self.xf[3])**2 for s in
+                self.Q[3][3]*sum([(s - model.xf[3])**2 for s in
                     model.state[:,3]]) +
                 self.R[0][0]*sum([c**2 for c in model.input[:,0]]) +
                 self.R[1][1]*sum([c**2 for c in model.input[:,1]]))
@@ -126,6 +128,7 @@ class MPC():
 
         # Optimization parameters
         model.x0 = pyo.Param(range(4), within=pyo.Reals, mutable=True)
+        model.xf = pyo.Param(range(4), within=pyo.Reals, mutable=True)
 
         # Initial conditions
         model.limits.add(model.state[0,0] == model.x0[0])

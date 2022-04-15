@@ -135,6 +135,7 @@ def plot_path(
     plt.xlabel("x [m]")
     plt.ylabel("y [m]")
     plt.title("Path (x,y)")
+    plt.grid()
 
     if(fileName is not None):
         plt.savefig(fileName)
@@ -148,11 +149,16 @@ def plot_input(
         fileName: str = None):
     plt.figure()
     plt.subplot(211)
+    plt.grid()
     plt.plot(sim.times[:-1], sim.inputs[:,0])
-    plt.title("Acceleration v_dot")
+    plt.xlabel('t [s]')
+    plt.ylabel('v_dot [m/s^2]')
     plt.subplot(212)
+    plt.grid()
     plt.plot(sim.times[:-1], np.degrees(sim.inputs[:,1]))
-    plt.title("Steering Angle gamma")
+    plt.xlabel('t [s]')
+    plt.ylabel('gamma [deg]')
+    plt.subplots_adjust(hspace=0.3)
 
     if(fileName is not None):
         plt.savefig(fileName)

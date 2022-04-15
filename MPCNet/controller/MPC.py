@@ -7,16 +7,18 @@ import matplotlib.pyplot as plt
 # MPC Hyper Parameters
 class MPCParams():
     # Main Params
-    H = 2 # [sec] Time horizon
+    H = 10 # [sec] Time horizon
     dt = 0.1 # [sec] MPC sampling time
     # Objective Params:
-    R = np.diag([100.0, 100.0])
-    Q = np.diag([5.0, 5.0, 0.0, 0.0])
-    Qf = 1000*np.diag([100.0, 100.0, 1.0, 1000.0])
+    R = 100*np.diag([100.0, 100.0])
+    Q = 1*np.diag([100.0, 100.0, 100.0, 10000.0])
+    Qf = 100*np.diag([100.0, 100.0, 100.0, 10000.0])
+    # Simulation Params
+    L = 2.60096 # [m] Wheelbase length
 
 
 # Controller class for MPC
-# Callable: MPC(x0, xf) -> u = (v_dot, psi_dot)
+# Callable: MPC(x0, xf) -> u = (v_dot, gamma)
 class MPC():
     def __init__(self, params=MPCParams(), plot=False):
         # Store main parameters
@@ -25,10 +27,11 @@ class MPC():
         self.N = round(self.H/self.dt) # Number of samples
         self.plot = plot # Generate a plot each __call__?
         # Store objective parameters
-        self.obj = self._ncvx_obj # Specify which obj to use
+        self.obj = self._cvx_obj # Specify which obj to use
         self.Q = params.Q # State path weight matrix
         self.R = params.R # Input path weight matrix
         self.Qf = params.Qf # State terminal weight matrix
+        self.L = params.L # Wheelbase length
 
         # Initialize model and solver
         self.opt = pyo.SolverFactory('ipopt') # Optimizer
@@ -66,8 +69,8 @@ class MPC():
     def _input_bounds(self, model, t, i):
         if i == 0: # v_dot
             return(-1.5, 1.0)
-        else: # psi_dot
-            return(-0.7, 0.7)
+        else: # gamma
+            return(-np.pi/4, np.pi/4)
 
     # Interval constraints on x
     def _state_bounds(self, model, t, i):
@@ -89,7 +92,8 @@ class MPC():
         accsum_expr = sum([dv**2 for dv in model.input[:,0]])
         angsum_expr = 0.0
         for k in range(self.N):
-            angsum_expr += (model.state[k,2]**2)*(model.input[k,1]**2)
+            angsum_expr += (model.state[k,2]**4)*\
+                    (pyo.tan(model.input[k,1])**2)/(self.L**2)
 
         # Add all costs
         obj = pyo.Objective(expr = term_expr + accsum_expr + angsum_expr)
@@ -145,7 +149,8 @@ class MPC():
             model.limits.add(model.state[k+1,2] == model.state[k,2] +\
                     self.dt*model.input[k,0])
             model.limits.add(model.state[k+1,3] == model.state[k,3] +\
-                    self.dt*model.input[k,1])
+                    self.dt*model.state[k,2]*pyo.tan(model.input[k,1])/\
+                    self.L)
 
         # Get obj function
         model.OBJ = self.obj(model)
@@ -170,6 +175,6 @@ class MPC():
         else:
             plt.xlim([np.min(xs)-0.5, np.max(xs)+0.5])
             plt.ylim([np.min(ys)-0.5, np.max(ys)+0.5])
-        plt.savefig("traj.png")
+        plt.savefig("mpc_traj.png")
 
 

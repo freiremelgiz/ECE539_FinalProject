@@ -122,19 +122,27 @@ def plot_path(
         fileName: str = None):
     plt.figure()
     plt.subplot(111)
-    plt.plot(sim.states[:,0], sim.states[:,1],'k')
+    # Plot path
+    plt.plot(sim.states[:,0], sim.states[:,1],'--k', alpha=0.75)
+    # Plot velocity profile
     plt.scatter(sim.states[:,0], sim.states[:,1], c=sim.states[:,2], alpha=0.5, s=20)
-    plt.plot(sim.xf[0], sim.xf[1], marker="x", markersize=10, markeredgecolor="red", markerfacecolor="red")
-    plt.plot(sim.x0[0], sim.x0[1], marker="s", markersize=10, markeredgecolor="red", markerfacecolor="red")
-    all_min = min(np.min(sim.states[:,0]), np.min(sim.states[:,1])) - 0.5
-    all_max = max(np.max(sim.states[:,0]), np.max(sim.states[:,1])) + 0.5
-    plt.xlim([min(sim.states[:,0]) - 1,\
-            max(sim.states[:,0])+ 1])
-    plt.ylim([min(sim.states[:,1]) - 1,\
-            max(sim.states[:,1])+ 1])
+    # Plot initial and final poses
+    plt.arrow(sim.x0[0], sim.x0[1], sim.L*np.cos(sim.x0[3]),
+            sim.L*np.sin(sim.x0[3]), length_includes_head=True,
+            color='red', head_width=sim.L/25, width=0.02,
+            head_length=sim.L/8)
+    plt.arrow(sim.xf[0], sim.xf[1], sim.L*np.cos(sim.xf[3]),
+            sim.L*np.sin(sim.xf[3]), length_includes_head=True,
+            color='red', head_width=sim.L/25, width=0.02,
+            head_length=sim.L/8)
+    # Set the axes limits based on x0 and xf
+    plt.xlim([min(sim.x0[0],sim.xf[0]) - 1.25*sim.L,
+              max(sim.x0[0],sim.xf[0]) + 1.25*sim.L])
+    plt.ylim([min(sim.x0[1],sim.xf[1]) - 1.25*sim.L,
+              max(sim.x0[1],sim.xf[1]) + 1.25*sim.L])
+    # Labels and grid
     plt.xlabel("x [m]")
     plt.ylabel("y [m]")
-    plt.title("Path (x,y)")
     plt.grid()
 
     if(fileName is not None):

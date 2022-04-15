@@ -9,8 +9,8 @@ from NMPC_Net.controller.MPC import MPC, MPCParams
 
 ### SIM EXAMPLE (10 Hz)
 initial = np.array([0.0, 0.0, 0.0, 0.0])
-#final = np.array([40.0, 40.0, 0.0, np.pi/2])
-final = np.array([30.0, 1.0, 0.0, 0.0])
+final = np.array([20.0, 20.0, 0.0, np.pi/2])
+#final = np.array([30.0, 1.0, 0.0, 0.0])
 controller = MPC()
 sim = simulation.Simulation(initial, final, 10.0, controller, stop_r=0.5)
 sim.run_simulation(20.0)

@@ -1,10 +1,10 @@
 #!/bin/env python3
 
-from MPCNet.simulation import simulation
+from NMPC_Net.simulation import simulation
 import numpy as np
-from MPCNet.controller import pyomo_controller
+from NMPC_Net.controller import pyomo_controller
 from functools import partial
-from MPCNet.controller.MPC import MPC, MPCParams
+from NMPC_Net.controller.MPC import MPC, MPCParams
 
 
 ### SIM EXAMPLE (10 Hz)

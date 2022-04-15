@@ -10,7 +10,7 @@ class MPCParams():
     H = 10 # [sec] Time horizon
     dt = 0.1 # [sec] MPC sampling time
     # Objective Params:
-    R = 100*np.diag([100.0, 100.0])
+    R = 100*100*np.diag([1.0, 2.0])
     Q = 1*np.diag([100.0, 100.0, 100.0, 10000.0])
     Qf = 100*np.diag([100.0, 100.0, 100.0, 10000.0])
     # Simulation Params

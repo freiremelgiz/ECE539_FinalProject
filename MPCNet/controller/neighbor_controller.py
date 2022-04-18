@@ -9,7 +9,7 @@ class NeighborController:
         self.X = X
         self.y = y
 
-    def getControl(self, initialState, finalState):
+    def getControl(self, initialState, finalState, headingWeight=5.0):
 
         relativeInitial, relativeFinal = utils.absoluteToRelative(initialState, finalState)
 
@@ -22,7 +22,9 @@ class NeighborController:
         ])
         
         cost = np.sum((self.X[:,:4] - newState[:4])**2, axis=1)
-        cost += (np.pi/2 - np.abs(np.abs(self.X[:,4] - newState[4]) - np.pi/2))**2
+        a = self.X[:,4] - newState[4]
+        a = np.abs(np.mod((a + np.pi),2*np.pi)) - np.pi
+        cost += headingWeight*a**2
 
 
         index = np.argmin(cost, axis=0)

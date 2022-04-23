@@ -144,6 +144,7 @@ def plot_path(
     plt.xlabel("x [m]")
     plt.ylabel("y [m]")
     plt.grid()
+    plt.axis('equal')
 
     if(fileName is not None):
         plt.savefig(fileName)

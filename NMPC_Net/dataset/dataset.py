@@ -24,8 +24,8 @@ class Dataset():
         self.numSamplesPerRun = samplesPerRun # Number of samples per run
         self.K = numRuns * samplesPerRun
         # State bounds
-        self.x_lb = np.array([-200, -200, 0, -np.pi/2], dtype=np.double).reshape((4,1))
-        self.x_ub = np.array([200, 200, 32, np.pi/2], dtype=np.double).reshape((4,1))
+        self.x_lb = np.array([0, -100, 0, -1*np.pi/3], dtype=np.double).reshape((4,1))
+        self.x_ub = np.array([100, 100, 32, np.pi/3], dtype=np.double).reshape((4,1))
         # Initialize dataset matrices
         self.X = [] # Feature matrix
         self.y = [] # Label matrix
@@ -39,7 +39,12 @@ class Dataset():
 
     # Get a random final state given initial state x0
     def _get_rand_xf(self, x0): # NOTE: x0 not used currently
-        return (self.x_ub - self.x_lb)*rand(4,1) + self.x_lb
+        temp = (self.x_ub - self.x_lb)*rand(4,1) + self.x_lb
+        if(temp[1] < 0 and temp[3] > 0):
+            temp[3] = -1*temp[3]
+        if(temp[1] > 0 and temp[3] < 0):
+            temp[3] = -1*temp[3]
+        return temp
 
     # Generate dataset and fill X and y
     # Pass a controller(x0, xf) object to this

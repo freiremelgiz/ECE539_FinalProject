@@ -39,7 +39,7 @@ class MPC():
 
     # Solve the MPC problem with initial state x0 and desired xf
     # returns u0 (v_dot, psi_dot)
-    def __call__(self, x0, xf):
+    def __call__(self, x0, xf, fullTrajectory=False):
         # Initialize parameters
         self.model.x0[0] = x0[0]
         self.model.x0[1] = x0[1]
@@ -62,13 +62,30 @@ class MPC():
             self._plot()
 
         # Return u0
-        return np.array([u0, u1])
+        if not fullTrajectory:
+            return np.array([u0, u1])
+        else:
+            traj = np.array([
+                np.array([
+                    self.model.state[t,0].value,
+                    self.model.state[t,1].value,
+                    self.model.state[t,2].value,
+                    self.model.state[t,3].value
+                ]) for t in range(self.N)
+            ]).reshape(self.N, 4)
+            control = np.array([
+                np.array([
+                    self.model.input[t,0].value,
+                    self.model.input[t,1].value
+                ]) for t in range(self.N)
+            ]).reshape(self.N, 2)
+            return (traj, control)
 
 
     # Interval constraints on u
     def _input_bounds(self, model, t, i):
         if i == 0: # v_dot
-            return(-1.5, 1.0)
+            return(-5.0, 1.0)
         else: # gamma
             return(-np.pi/4, np.pi/4)
 

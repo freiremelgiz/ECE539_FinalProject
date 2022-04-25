@@ -6,14 +6,14 @@ Create a dataset and save as data.csv
 """
 
 from NMPC_Net.dataset.dataset import Dataset
-from NMPC_Net.controller.pyomo_controller import mpcController
+from NMPC_Net.controller.MPC import MPC, MPCParams
 from functools import partial
 
-mpc = partial(mpcController,
-            plot=False)
+params = MPCParams()
+controller = MPC(params=params)
 
 # Create Dataset class
-dset = Dataset(numRuns=10000, samplesPerRun=100)
-dset.generate(mpc)
-dset.save('data5-1000000.csv')
+dset = Dataset(numRuns=200, samplesPerRun=100)
+dset.generate(controller)
+dset.save('data5-200000.csv')
 

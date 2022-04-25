@@ -63,7 +63,7 @@ class Simulation:
         while(times[-1] < duration and not self.reached_goal):
             if not quiet: # Show iter summary
                 print(f"{iterCount}: Sim time: {times[-1]}/{duration}\
-                        Wall Time: {datetime.now()-startTime}")
+                        Wall Time: {datetime.now()-startTime}", end="\r")
 
             # Run controller and simulate
             self.control = self.controller(states[-1], self.xf)

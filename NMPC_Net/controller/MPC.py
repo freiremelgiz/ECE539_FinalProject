@@ -68,7 +68,7 @@ class MPC():
     # Interval constraints on u
     def _input_bounds(self, model, t, i):
         if i == 0: # v_dot
-            return(-1.5, 1.0)
+            return(-5.0, 1.0)
         else: # gamma
             return(-np.pi/4, np.pi/4)
 

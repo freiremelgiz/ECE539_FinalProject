@@ -151,6 +151,42 @@ def plot_path(
     else:
         plt.show()
 
+# Plot x in time
+def plot_state(
+        sim: Simulation,
+        fileName: str = None):
+    plt.figure()
+    # Plot x(t)
+    plt.subplot(221)
+    plt.grid()
+    plt.plot(sim.times, sim.states[:,0])
+    plt.xlabel('t [s]')
+    plt.ylabel('x [m]')
+    # Plot y(t)
+    plt.subplot(222)
+    plt.grid()
+    plt.plot(sim.times, sim.states[:,1])
+    plt.xlabel('t [s]')
+    plt.ylabel('y [m]')
+    # Plot v(t)
+    plt.subplot(223)
+    plt.grid()
+    plt.plot(sim.times, sim.states[:,2])
+    plt.xlabel('t [s]')
+    plt.ylabel('v [m/s]')
+    # Plot psi(t)
+    plt.subplot(224)
+    plt.grid()
+    plt.plot(sim.times, np.degrees(sim.states[:,3]))
+    plt.xlabel('t [s]')
+    plt.ylabel('psi [deg]')
+    plt.subplots_adjust(hspace=0.3, wspace=0.3)
+    # Store or show
+    if(fileName is not None):
+        plt.savefig(fileName)
+    else:
+        plt.show()
+
 
 # Plot u in time
 def plot_input(

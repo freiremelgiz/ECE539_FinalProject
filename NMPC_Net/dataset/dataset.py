@@ -24,35 +24,62 @@ class Dataset():
         self.numSamplesPerRun = samplesPerRun # Number of samples per run
         self.K = numRuns * samplesPerRun
         # State bounds
-        self.x_lb = np.array([0, -100, 0, -1*np.pi/3], dtype=np.double).reshape((4,1))
-        self.x_ub = np.array([100, 100, 10, np.pi/3], dtype=np.double).reshape((4,1))
+        self.r_lb = 30.0  # [m]
+        self.r_ub = 100.0 # [m]
+        self.th_lb = -np.radians(45) # [rad]
+        self.th_ub = np.radians(45) # [rad]
+        self.v_lb = 0.0 # [m/s]
+        self.v_ub = 10.0 # [m/s]
+        self.psi_lb = 0.0 # [rad]
+        self.psi_ub = np.radians(90) # [rad]
+
+        #self.x_lb = np.array([0, -100, 0, -1*np.pi/3], dtype=np.double).reshape((4,1))
+        #self.x_ub = np.array([100, 100, 10, np.pi/3], dtype=np.double).reshape((4,1))
         # Initialize dataset matrices
         self.X = [] # Feature matrix
         self.y = [] # Label matrix
 
-    # Get an initial state with speed within bounds:
-    # v \in [v_lb, v_ub]
+    # Get an initial state [0, 0, v0, 0]^T with
+    # v_0 \in [v_lb, v_ub]
     def _get_rand_x0(self):
         x0 = np.zeros((4,1), dtype=np.double)
-        x0[2] = (self.x_ub[2]-self.x_lb[2])*rand(1,1) + self.x_lb[2]
+        x0[2] = (self.v_ub - self.v_lb)*rand(1,1) + self.v_lb
         return x0
 
-    # Get a random final state given initial state x0
-    def _get_rand_xf(self, x0): # NOTE: x0 not used currently
-        temp = (self.x_ub - self.x_lb)*rand(4,1) + self.x_lb
-        temp[2] = 0.0
-        if(temp[1] < 0 and temp[3] > 0):
-            temp[3] = -1*temp[3]
-        if(temp[1] > 0 and temp[3] < 0):
-            temp[3] = -1*temp[3]
-        return temp
+    # Get a final state [xf, yf, 0, psif]^T with
+    # xf = r*cos(th)
+    # yf = r*sin(th)
+    # psif \in [psi_lb, psi_ub]
+    # r \in  [r_lb, r_ub]
+    # th \in [th_lb, th_ub]
+    def _get_rand_xf(self):
+        # Get random quantities
+        rand_seed = rand(3)
+        r = (self.r_ub - self.r_lb)*rand_seed[0] + self.r_lb
+        th = (self.th_ub - self.th_lb)*rand_seed[1] + self.th_lb
+        psi = (self.psi_ub - self.psi_lb)*rand_seed[2] + self.psi_lb
+        # Initialize and populate final state
+        xf = np.zeros((4,1), dtype=np.double)
+        xf[0] = r*np.cos(th) # x
+        xf[1] = r*np.sin(th) # y
+        xf[3] = np.sign(th)*psi # psi
+        # Return final state
+        return xf
+
+    # Populate self.X with N features (x0, xf)
+    def populate_features(self, N):
+        for i in range(N):
+            x0 = self._get_rand_x0()
+            xf = self._get_rand_xf()
+            x = np.vstack((x0,xf))
+            self.X.append(x.T)
 
     # Generate dataset and fill X and y
     # Pass a controller(x0, xf) object to this
     def generate(self, controller):
         for i in tqdm(range(self.numRuns)):
             x0 = self._get_rand_x0()
-            xf = self._get_rand_xf(x0)
+            xf = self._get_rand_xf()
             
             traj, control = controller(x0.flatten(), xf.flatten(), fullTrajectory=True)
             

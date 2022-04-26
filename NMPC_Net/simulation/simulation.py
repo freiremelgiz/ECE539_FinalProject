@@ -116,6 +116,27 @@ class Simulation:
         derivative[3] = v * np.tan(self.control[1]) / self.L
         return derivative
 
+# Plot paths for an array of Simulation
+def plot_paths(sims, fileName):
+    plt.figure()
+    plt.subplot(111)
+    for sim in sims:
+        # Plot path
+        plt.plot(sim.states[:,0], sim.states[:,1],'--k', alpha=0.75)
+        # Plot velocity profile
+        plt.scatter(sim.states[:,0], sim.states[:,1], c=sim.states[:,2], alpha=0.5, s=20)
+
+    # Labels and grid
+    plt.xlabel("x [m]")
+    plt.ylabel("y [m]")
+    plt.grid()
+    plt.axis('equal')
+
+    if(fileName is not None):
+        plt.savefig(fileName)
+    else:
+        plt.show()
+
 # Plot x and y (path)
 def plot_path(
         sim: Simulation,

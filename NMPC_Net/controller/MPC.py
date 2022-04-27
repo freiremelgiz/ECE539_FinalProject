@@ -14,7 +14,7 @@ class MPCParams():
     Q = np.diag([2.0, 2.0, 1.0, 100.0])
     Qf = 100*np.diag([2.0, 2.0, 1.0, 100.0])
     # Simulation Params
-    L = 2.60096 # [m] Wheelbase length
+    L = 2.675 # [m] Wheelbase length
 
 
 # Controller class for MPC

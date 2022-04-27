@@ -13,7 +13,7 @@ params = MPCParams()
 controller = MPC(params=params)
 
 # Create Dataset class
-dset = Dataset(numRuns=200, samplesPerRun=100)
+dset = Dataset(numRuns=400, samplesPerRun=100)
 dset.generate(controller)
-dset.save('data5-200000.csv')
+dset.save('data5-400000.csv')
 

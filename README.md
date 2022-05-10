@@ -1,4 +1,4 @@
-# ECE717_FinalProject
+# ECE539_FinalProject
 Final Project for ECE539: Introduction to Artificial Neural Networks. NMPC-Net: An efficient alternative to Nonlinear Model Predictive Control.
 
 This project includes a Python package `NMPC_Net` which contains a nonlinear MPC for the kinematic bicycle model. It uses `pyomo` and IPOPT.
